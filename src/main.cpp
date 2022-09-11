@@ -26,13 +26,17 @@ auto create_scene(agm::ObjectFactory &factory) -> agm::Object<> *
 
     //auto union1 = factory.make<agm::geometry::Union<>>(sphere1, sphere2);
 
-    auto wiggle_fn = [](agm::Vec3<double> p, double d) { 
-        return d + 0.05 * std::sin(20 * p.x) * std::sin(20 * p.y) * std::sin(20 * p.z); 
+    auto difference1 = factory.make<agm::geometry::Difference<>>(sphere1, sphere2);
+    
+    //auto intersection1 = factory.make<agm::geometry::Intersection<>>(sphere1, sphere2);
+
+    /*
+    auto wiggle_fn = [](agm::Vec3<float> p, float d) { 
+        return d + 0.02 * std::sin(20 * p.x);// * std::sin(20 * p.y) * std::sin(20 * p.z); 
     };
 
-    auto distort1 = factory.make<agm::geometry::Distort<decltype(wiggle_fn)>>(sphere1, wiggle_fn);
-
-    auto difference1 = factory.make<agm::geometry::Difference<>>(distort1, sphere2);
+    auto distort1 = factory.make<agm::geometry::Distort<decltype(wiggle_fn)>>(difference1, wiggle_fn);
+    */
 
     auto plane1 = factory.make<agm::geometry::InfinitePlane<>>();
     {
@@ -50,7 +54,7 @@ auto create_scene(agm::ObjectFactory &factory) -> agm::Object<> *
 
 int main(int argc, char *argv[])
 {
-    constexpr size_t Width = 1000, Height = 1000;
+    constexpr size_t Width = 4000, Height = 4000;
 
     std::string output_filename = "output.bmp";
     if (argc > 1)
@@ -91,7 +95,7 @@ int main(int argc, char *argv[])
     }
 
     fmt::print("Rendering scene\n");
-    agm::render(camera1, *scene1, light1, {0, 0, 0}, surface1);
+    agm::render(camera1, scene1, light1, {0, 0, 0}, surface1);
 
     fmt::print("Saving surface to file\n");
     agm::surface_to_file(surface1, output_filename);

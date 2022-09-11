@@ -8,7 +8,7 @@
 namespace agm
 {
 
-template<typename T = double>
+template<typename T = float>
 struct Object
 {
     virtual auto map(const Vec3<T> &) const noexcept -> std::pair<T, Material<>> = 0;

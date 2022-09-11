@@ -9,7 +9,7 @@
 namespace agm::geometry
 {
 
-template<typename T = double>
+template<typename T = float>
 struct Sphere: public Object<T>
 {
     Sphere()
@@ -27,7 +27,7 @@ struct Sphere: public Object<T>
 };
 
 
-template<typename T = double>
+template<typename T = float>
 struct InfinitePlane: public Object<T>
 {
     InfinitePlane()
@@ -43,7 +43,7 @@ struct InfinitePlane: public Object<T>
     Material<> material;
 };
 
-template<typename T = double>
+template<typename T = float>
 struct Union: public Object<T>
 {
     Union(const Object<T> * const obj1_, const Object<T> * const obj2_) 
@@ -53,20 +53,20 @@ struct Union: public Object<T>
 
     auto map(const Vec3<T> &p) const noexcept -> std::pair<T, Material<>> override
     {
-        auto d1m1 = obj1->map(p);
-        auto d2m2 = obj2->map(p);
+        auto [d1, m1] = obj1->map(p);
+        auto [d2, m2] = obj2->map(p);
 
-        if (d1m1.first < d2m2.first)
-            return d1m1;
+        if (d1 < d2)
+            return {d1, m1};
         else
-            return d2m2;
+            return {d2, m2};
     }
 
     const Object<T> * const obj1;
     const Object<T> * const obj2;
 };
 
-template<typename T = double>
+template<typename T = float>
 struct Difference: public Object<T>
 {
     Difference(const Object<T> * const obj1_, const Object<T> * const obj2_) 
@@ -89,7 +89,30 @@ struct Difference: public Object<T>
     const Object<T> * const obj2;
 };
 
-template<typename DistortFn, typename T = double>
+template<typename T = float>
+struct Intersection: public Object<T>
+{
+    Intersection(const Object<T> * const obj1_, const Object<T> * const obj2_) 
+        : obj1{obj1_}, obj2{obj2_}
+    {
+    }
+
+    auto map(const Vec3<T> &p) const noexcept -> std::pair<T, Material<>> override
+    {
+        auto [d1, m1] = obj1->map(p);
+        auto [d2, m2] = obj2->map(p);
+
+        if (d1 > d2)
+            return {d1, m1};
+        else
+            return {d2, m2};
+    }
+
+    const Object<T> * const obj1;
+    const Object<T> * const obj2;
+};
+
+template<typename DistortFn, typename T = float>
 struct Distort: public Object<T>
 {
     Distort(const Object<T> * const obj_, DistortFn distort_fn_) 

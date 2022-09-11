@@ -5,7 +5,7 @@
 namespace agm
 {
 
-template<typename T = double>
+template<typename T = float>
 struct Ray
 {
     Vec3<T> position, direction;

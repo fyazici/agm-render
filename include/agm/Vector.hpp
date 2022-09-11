@@ -5,13 +5,13 @@
 namespace agm
 {
 
-template<typename T = double>
+template<typename T = float>
 struct Vec2
 {
     T x, y;
 };
 
-template<typename T = double>
+template<typename T = float>
 struct Vec3
 {
     T x, y, z;

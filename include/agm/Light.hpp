@@ -6,7 +6,7 @@
 namespace agm
 {
 
-template<typename T = double, typename C = Color3<>>
+template<typename T = float, typename C = Color3<>>
 struct Light
 {
     Vec3<T> position;

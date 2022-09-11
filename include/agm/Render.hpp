@@ -11,15 +11,15 @@
 namespace agm
 {
 
-constexpr size_t RAYMARCH_MAX_STEPS = 256;
+constexpr size_t RAYMARCH_MAX_STEPS = 1000;
 
-template<typename T = double>
+template<typename T = float>
 constexpr T RAYMARCH_EPSILON = 1e-7;
 
-template<typename T = double>
+template<typename T = float>
 constexpr T RAYMARCH_OCCLUSION_MAX = 1000;
 
-template<typename T = double, typename C = Color3<double>, typename S = Surface<>>
+template<typename T = float, typename C = Color3<float>, typename S = Surface<>>
 void render(
     const Camera<T> &camera, 
     const Object<T> * const object,
@@ -75,7 +75,7 @@ void render(
     }
 }
 
-template<typename T = double, typename C>
+template<typename T = float, typename C>
 auto get_viewport_pos(size_t i, size_t j, const Camera<T> &camera, const Surface<C> &surface) -> Vec2<T>
 {
     const auto viewport = camera.viewport;
@@ -89,14 +89,14 @@ auto get_viewport_pos(size_t i, size_t j, const Camera<T> &camera, const Surface
     };
 }
 
-template<typename T = double>
+template<typename T = float>
 auto get_camera_ray(const Vec2<T> viewport_pos, const Camera<T> &camera) -> Ray<T>
 {   
     auto dir = camera.gaze + (camera.up * viewport_pos.y + camera.right * viewport_pos.x) / camera.near;
     return { camera.position, dir.normalize() };
 }
 
-template<typename T = double>
+template<typename T = float>
 auto do_raymarch(const Ray<T> &ray, const Object<T> &object, const T &far) -> std::optional<std::pair<Vec3<T>, Material<>>>
 {
     Vec3<T> p = ray.position;
@@ -116,7 +116,7 @@ auto do_raymarch(const Ray<T> &ray, const Object<T> &object, const T &far) -> st
     return {};
 }
 
-template<typename T = double>
+template<typename T = float>
 auto estimate_normal(const Vec3<T> position, const Object<T> &object) -> Vec3<T>
 {
     constexpr Vec3<T> dx = { RAYMARCH_EPSILON<T>, 0, 0 };

@@ -3,33 +3,29 @@
 namespace agm
 {
 
-template<typename T = double>
+template<typename T = float>
 struct Color3
 {
     T r, g, b;
 
     typedef T value_type;
 
-    template<typename T2>
-    auto operator+(const Color3<T2> &rhs) const noexcept -> Color3<T>
+    auto operator+(const Color3<T> &rhs) const noexcept -> Color3<T>
     {
         return { r + rhs.r, g + rhs.g, b + rhs.b };
     }
 
-    template<typename T2>
-    auto operator*(const T2 &rhs) const noexcept -> Color3<T>
+    auto operator*(const T &rhs) const noexcept -> Color3<T>
     {
         return { r * rhs, g * rhs, b * rhs };
     }
 
-    template<typename T2>
-    auto operator*(const Color3<T2> &rhs) const noexcept -> Color3<T>
+    auto operator*(const Color3<T> &rhs) const noexcept -> Color3<T>
     {
         return { r * rhs.r, g * rhs.g, b * rhs.b };
     }
 
-    template<typename T2>
-    auto operator+=(const Color3<T2> &rhs) noexcept -> Color3<T>&
+    auto operator+=(const Color3<T> &rhs) noexcept -> Color3<T>&
     {
         r += rhs.r;
         g += rhs.g;
