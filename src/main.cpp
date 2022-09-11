@@ -1,13 +1,13 @@
 #include <fmt/core.h>
 
-#define AGM_USE_OPENMP
+//#define AGM_USE_OPENMP
 #include <agm/agm.h>
 
 int main(int argc, char *argv[])
 {
-    constexpr size_t Width = 10000, Height = 10000;
+    constexpr size_t Width = 1000, Height = 1000;
 
-    std::string output_filename = "output.png";
+    std::string output_filename = "output.bmp";
     if (argc > 1)
         output_filename = argv[1];
 
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     agm::render(camera1, scene1, light1, {0, 0, 0}, surface1);
 
     fmt::print("Saving surface to file\n");
-    agm::surface_to_png(surface1, output_filename);
+    agm::surface_to_file(surface1, output_filename);
 
     fmt::print("Complete\n");
 

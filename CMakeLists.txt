@@ -11,6 +11,6 @@ set(SRCS
 )
 
 add_executable(agm-renderer ${SRCS})
-add_compile_options(agm-renderer PRIVATE -Wall)
 target_include_directories(agm-renderer PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_compile_options(agm-renderer PRIVATE -Wall)
 target_link_libraries(agm-renderer PRIVATE fmt::fmt-header-only OpenMP::OpenMP_CXX)

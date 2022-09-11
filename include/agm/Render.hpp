@@ -60,6 +60,7 @@ void render(
 template<typename T = double>
 auto get_camera_ray(const Camera<T> &camera, const Vec3<T> surface_pos) -> Ray<T>
 {
+    // TODO: use viewport aspect ratio
     T y_cam = 1 - surface_pos.y * 2;
     T x_cam = 1 - surface_pos.x * 2;
     
