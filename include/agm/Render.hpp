@@ -16,6 +16,9 @@ constexpr size_t RAYMARCH_MAX_STEPS = 256;
 template<typename T = double>
 constexpr T RAYMARCH_EPSILON = 1e-6;
 
+template<typename T = double>
+constexpr T RAYMARCH_OCCLUSION_MAX = 100;
+
 template<typename T = double, typename C = Color3<double>, typename S = Surface<>>
 void render(
     const Camera<T> &camera, 
@@ -31,45 +34,70 @@ void render(
     {
         for (size_t j = 0; j < surface.width; ++j)
         {
-            Vec3<T> surface_pos{T(j) / surface.width, T(i) / surface.height, 0};
-            auto ray = get_camera_ray(camera, surface_pos);
+            C frag_color;
+            auto viewport_pos = get_viewport_pos(i, j, camera, surface);
+            auto ray = get_camera_ray(viewport_pos, camera);
             
-            auto march_result = do_raymarch(ray, object, camera.maximum_distance);
+            auto march_result = do_raymarch(ray, object, camera.far);
             if (march_result)
             {
                 auto [p, m] = march_result.value();
                 auto normal = estimate_normal(p, object);
 
                 auto light_dir = (light.position - p).normalize();
+                auto occlusion = do_raymarch(
+                    { p + normal * 2 * RAYMARCH_EPSILON<>, light_dir }, 
+                    object, 
+                    RAYMARCH_OCCLUSION_MAX<T>
+                );
                 
+                typename C::value_type shadow = 0;
+
+                if (occlusion)
+                {
+                    shadow = 0.5;
+                }
+
                 auto dot_1 = normal.dot(light_dir);
                 auto diffuse_mix = light.color * std::max((T)0, dot_1);
 
                 auto reflect_dir = normal.reflect(light_dir);
                 auto dot_2 = reflect_dir.dot(-ray.direction);
                 auto specular_mix = light.color * std::pow(std::max(T(0), dot_2), 4);
-                
-                surface.at(i, j) = m.ambient + m.diffuse * diffuse_mix + m.specular * specular_mix;
+
+                frag_color = m.ambient + (m.diffuse * diffuse_mix + m.specular * specular_mix) * (1 - shadow);
             }
             else
-                surface.at(i, j) = background;
+                frag_color = background;
+            
+            surface.at(i, j) = frag_color;
         }
     }
 }
 
-template<typename T = double>
-auto get_camera_ray(const Camera<T> &camera, const Vec3<T> surface_pos) -> Ray<T>
+template<typename T = double, typename C>
+auto get_viewport_pos(size_t i, size_t j, const Camera<T> &camera, const Surface<C> &surface) -> Vec2<T>
 {
-    // TODO: use viewport aspect ratio
-    T y_cam = 1 - surface_pos.y * 2;
-    T x_cam = 1 - surface_pos.x * 2;
-    
-    auto dir = camera.gaze + (camera.up * y_cam + camera.left * x_cam) / camera.focal_distance;
+    const auto viewport = camera.viewport;
+    const auto vw = viewport.right - viewport.left;
+    const auto vh = viewport.top - viewport.bottom;
+    if (vw < 0 || vh < 0) exit(-1);
+
+    return { 
+        viewport.left + ((T)j / surface.width)  * vw, 
+        viewport.top - ((T)i / surface.height) * vh 
+    };
+}
+
+template<typename T = double>
+auto get_camera_ray(const Vec2<T> viewport_pos, const Camera<T> &camera) -> Ray<T>
+{   
+    auto dir = camera.gaze + (camera.up * viewport_pos.y + camera.right * viewport_pos.x) / camera.near;
     return { camera.position, dir.normalize() };
 }
 
 template<typename T = double>
-auto do_raymarch(const Ray<T> &ray, const Object<T> &object, const T &maximum_distance) -> std::optional<std::pair<Vec3<T>, Material<>>>
+auto do_raymarch(const Ray<T> &ray, const Object<T> &object, const T &far) -> std::optional<std::pair<Vec3<T>, Material<>>>
 {
     Vec3<T> p = ray.position;
     T distance_marched = 0;
@@ -78,10 +106,10 @@ auto do_raymarch(const Ray<T> &ray, const Object<T> &object, const T &maximum_di
     {
         auto [d, m] = object.map(p);
         p = p + ray.direction * d;
-        if (std::abs(d) < RAYMARCH_EPSILON<T>)
+        if (d < RAYMARCH_EPSILON<T>)
             return { { p, m } };
         distance_marched += d;
-        if (distance_marched > maximum_distance)
+        if (distance_marched > far)
             break;
     }
 
