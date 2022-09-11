@@ -14,40 +14,40 @@ namespace agm
 constexpr size_t RAYMARCH_MAX_STEPS = 256;
 
 template<typename T = double>
-constexpr T RAYMARCH_EPSILON = 1e-6;
+constexpr T RAYMARCH_EPSILON = 1e-7;
 
 template<typename T = double>
-constexpr T RAYMARCH_OCCLUSION_MAX = 100;
+constexpr T RAYMARCH_OCCLUSION_MAX = 1000;
 
 template<typename T = double, typename C = Color3<double>, typename S = Surface<>>
 void render(
     const Camera<T> &camera, 
-    const Object<T> &object,
+    const Object<T> * const object,
     const Light<T, C> &light,
     const C &background,
     S &surface
 ) {
-    #ifdef AGM_USE_OPENMP
-    #pragma omp parallel for
-    #endif
     for (size_t i = 0; i < surface.height; ++i)
     {
+        #ifdef AGM_USE_OPENMP
+        #pragma omp parallel for firstprivate(object) schedule(static, 1)
+        #endif
         for (size_t j = 0; j < surface.width; ++j)
         {
             C frag_color;
             auto viewport_pos = get_viewport_pos(i, j, camera, surface);
             auto ray = get_camera_ray(viewport_pos, camera);
             
-            auto march_result = do_raymarch(ray, object, camera.far);
+            auto march_result = do_raymarch(ray, *object, camera.far);
             if (march_result)
             {
                 auto [p, m] = march_result.value();
-                auto normal = estimate_normal(p, object);
+                auto normal = estimate_normal(p, *object);
 
                 auto light_dir = (light.position - p).normalize();
                 auto occlusion = do_raymarch(
                     { p + normal * 2 * RAYMARCH_EPSILON<>, light_dir }, 
-                    object, 
+                    *object, 
                     RAYMARCH_OCCLUSION_MAX<T>
                 );
                 
