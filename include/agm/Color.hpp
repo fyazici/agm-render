@@ -8,6 +8,8 @@ struct Color3
 {
     T r, g, b;
 
+    typedef T value_type;
+
     template<typename T2>
     auto operator+(const Color3<T2> &rhs) const noexcept -> Color3<T>
     {
@@ -24,6 +26,15 @@ struct Color3
     auto operator*(const Color3<T2> &rhs) const noexcept -> Color3<T>
     {
         return { r * rhs.r, g * rhs.g, b * rhs.b };
+    }
+
+    template<typename T2>
+    auto operator+=(const Color3<T2> &rhs) noexcept -> Color3<T>&
+    {
+        r += rhs.r;
+        g += rhs.g;
+        b += rhs.b;
+        return *this;
     }
 
     operator Color3<unsigned char>() const noexcept 

@@ -6,6 +6,12 @@ namespace agm
 {
 
 template<typename T = double>
+struct Vec2
+{
+    T x, y;
+};
+
+template<typename T = double>
 struct Vec3
 {
     T x, y, z;
@@ -42,6 +48,13 @@ struct Vec3
         auto p = rhs / dot(rhs);
         auto q = (*this) * 2 - p;
         return q.normalize();
+    }
+
+    template<typename T2>
+    auto rotate_x(const T2 angle) const noexcept -> Vec3<T>
+    {
+        auto c = std::cos(angle), s = std::sin(angle);
+        return { x, y * c + z * s, z * c - y * s};
     }
 
     template<typename T2>
